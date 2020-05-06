@@ -4028,12 +4028,12 @@ namespace ts {
                             secondAccessor = member;
                         }
 
-                        if (member.kind === SyntaxKind.GetAccessor && !getAccessor) {
-                            getAccessor = <GetAccessorDeclaration>member;
+                        if (isGetAccessor(member) && !getAccessor) {
+                            getAccessor = member;
                         }
 
-                        if (member.kind === SyntaxKind.SetAccessor && !setAccessor) {
-                            setAccessor = <SetAccessorDeclaration>member;
+                        if (isSetAccessor(member) && !setAccessor) {
+                            setAccessor = member;
                         }
                     }
                 }
