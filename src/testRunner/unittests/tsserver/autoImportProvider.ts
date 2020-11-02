@@ -317,7 +317,7 @@ namespace ts.projectSystem {
         };
 
         function updateFile(path: string, newText: string) {
-            Debug.assertDefined(files.find(f => f.path === path));
+            Debug.checkDefined(files.find(f => f.path === path));
             session.executeCommandSeq<protocol.ApplyChangedToOpenFilesRequest>({
                 command: protocol.CommandTypes.ApplyChangedToOpenFiles,
                 arguments: {
@@ -330,7 +330,7 @@ namespace ts.projectSystem {
         }
 
         function findAllReferences(file: string, line: number, offset: number) {
-            Debug.assertDefined(files.find(f => f.path === file));
+            Debug.checkDefined(files.find(f => f.path === file));
             session.executeCommandSeq<protocol.ReferencesRequest>({
                 command: protocol.CommandTypes.References,
                 arguments: {
