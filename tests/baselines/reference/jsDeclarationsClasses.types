@@ -30,6 +30,19 @@ export class D {
 >b : number
 }
 
+export class D1 extends D {
+>D1 : D1
+>D : D
+
+    constructor() {
+        super(0, 0);
+>super(0, 0) : void
+>super : typeof D
+>0 : 0
+>0 : 0
+    }
+}
+
 /**
  * @template T,U
  */
@@ -302,6 +315,23 @@ export class O extends N {
 >this : this
 >another2 : any
 >param : U
+    }
+}
+
+export class P {
+>P : P
+
+    constructor() {}
+}
+
+export class P1 extends P {
+>P1 : P1
+>P : P
+
+    constructor() {
+        super();
+>super() : void
+>super : typeof P
     }
 }
 

@@ -22,6 +22,12 @@ export class D {
     constructor(a, b) {}
 }
 
+export class D1 extends D {
+    constructor() {
+        super(0, 0);
+    }
+}
+
 /**
  * @template T,U
  */
@@ -183,6 +189,16 @@ export class O extends N {
     constructor(param) {
         super(param);
         this.another2 = param;
+    }
+}
+
+export class P {
+    constructor() {}
+}
+
+export class P1 extends P {
+    constructor() {
+        super();
     }
 }
 

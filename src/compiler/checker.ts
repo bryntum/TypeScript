@@ -7221,8 +7221,14 @@ namespace ts {
                         if (baseType) {
                             // If there is a base type, if every signature in the class is identical to a signature in the baseType, elide all the declarations
                             const baseSigs = getSignaturesOfType(baseType, SignatureKind.Construct);
-                            if (!length(baseSigs) && every(signatures, s => length(s.parameters) === 0)) {
-                                return []; // Base had no explicit signatures, if all our signatures are also implicit, return an empty list
+                            if (!length(baseSigs)) {
+                                const isClass = !!input.symbol?.valueDeclaration && isClassLike(input.symbol.valueDeclaration);
+                                const sigs = isClass
+                                    ? concatenate(signatures, getSignaturesOfType(getBaseConstructorTypeOfClass(input as InterfaceType), SignatureKind.Construct))
+                                    : signatures;
+                                if (every(sigs, s => length(s.parameters) === 0)) {
+                                    return []; // Base had no explicit signatures, if all our signatures are also implicit, return an empty list
+                                }
                             }
                             if (baseSigs.length === signatures.length) {
                                 let failed = false;

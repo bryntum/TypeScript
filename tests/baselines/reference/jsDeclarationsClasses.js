@@ -17,6 +17,12 @@ export class D {
     constructor(a, b) {}
 }
 
+export class D1 extends D {
+    constructor() {
+        super(0, 0);
+    }
+}
+
 /**
  * @template T,U
  */
@@ -181,6 +187,16 @@ export class O extends N {
     }
 }
 
+export class P {
+    constructor() {}
+}
+
+export class P1 extends P {
+    constructor() {
+        super();
+    }
+}
+
 var x = /** @type {*} */(null);
 
 export class VariableBase extends x {}
@@ -210,7 +226,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExtendsStatics = exports.HasStatics = exports.VariableBase = exports.O = exports.N = exports.M = exports.L = exports.K = exports.J = exports.JJ = exports.II = exports.I = exports.H = exports.G = exports.F = exports.E = exports.D = exports.C = exports.B = exports.A = void 0;
+exports.ExtendsStatics = exports.HasStatics = exports.VariableBase = exports.P1 = exports.P = exports.O = exports.N = exports.M = exports.L = exports.K = exports.J = exports.JJ = exports.II = exports.I = exports.H = exports.G = exports.F = exports.E = exports.D1 = exports.D = exports.C = exports.B = exports.A = void 0;
 var A = /** @class */ (function () {
     function A() {
     }
@@ -245,6 +261,14 @@ var D = /** @class */ (function () {
     return D;
 }());
 exports.D = D;
+var D1 = /** @class */ (function (_super) {
+    __extends(D1, _super);
+    function D1() {
+        return _super.call(this, 0, 0) || this;
+    }
+    return D1;
+}(D));
+exports.D1 = D1;
 /**
  * @template T,U
  */
@@ -421,6 +445,20 @@ var O = /** @class */ (function (_super) {
     return O;
 }(N));
 exports.O = O;
+var P = /** @class */ (function () {
+    function P() {
+    }
+    return P;
+}());
+exports.P = P;
+var P1 = /** @class */ (function (_super) {
+    __extends(P1, _super);
+    function P1() {
+        return _super.call(this) || this;
+    }
+    return P1;
+}(P));
+exports.P1 = P1;
 var x = /** @type {*} */ (null);
 var VariableBase = /** @class */ (function (_super) {
     __extends(VariableBase, _super);
@@ -465,6 +503,9 @@ export class D {
      * @param {number} b
      */
     constructor(a: number, b: number);
+}
+export class D1 extends D {
+    constructor();
 }
 /**
  * @template T,U
@@ -582,6 +623,10 @@ export class O<U> extends N<U> {
      */
     constructor(param: U);
     another2: U;
+}
+export class P {
+}
+export class P1 extends P {
 }
 declare const VariableBase_base: any;
 export class VariableBase extends VariableBase_base {
