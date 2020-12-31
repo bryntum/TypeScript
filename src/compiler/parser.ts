@@ -532,6 +532,7 @@ namespace ts {
             case SyntaxKind.JSDocTypeLiteral:
                 return forEach((node as JSDocTypeLiteral).jsDocPropertyTags, cbNode);
             case SyntaxKind.JSDocTag:
+            case SyntaxKind.JSDocAbstractTag:
             case SyntaxKind.JSDocClassTag:
             case SyntaxKind.JSDocPublicTag:
             case SyntaxKind.JSDocPrivateTag:
@@ -7443,6 +7444,9 @@ namespace ts {
 
                     let tag: JSDocTag | undefined;
                     switch (tagName.escapedText) {
+                        case "abstract":
+                            tag = parseSimpleTag(start, factory.createJSDocAbstractTag, tagName, margin, indentText);
+                            break;
                         case "author":
                             tag = parseAuthorTag(start, tagName, margin, indentText);
                             break;

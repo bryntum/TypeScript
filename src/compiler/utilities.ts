@@ -4719,6 +4719,7 @@ namespace ts {
                 if (getJSDocPrivateTagNoCache(node)) flags |= ModifierFlags.Private;
                 if (getJSDocProtectedTagNoCache(node)) flags |= ModifierFlags.Protected;
                 if (getJSDocReadonlyTagNoCache(node)) flags |= ModifierFlags.Readonly;
+                if (getJSDocAbstractTagNoCache(node)) flags |= ModifierFlags.Abstract;
             }
             if (getJSDocDeprecatedTagNoCache(node)) flags |= ModifierFlags.Deprecated;
         }

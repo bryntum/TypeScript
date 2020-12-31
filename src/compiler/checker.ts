@@ -6800,6 +6800,7 @@ namespace ts {
                         ...!length(baseTypes) ? [] : [factory.createHeritageClause(SyntaxKind.ExtendsKeyword, map(baseTypes, b => serializeBaseType(b, staticBaseType, localName)))],
                         ...!length(implementsExpressions) ? [] : [factory.createHeritageClause(SyntaxKind.ImplementsKeyword, implementsExpressions)]
                     ];
+                    const modifiers = originalDecl && hasEffectiveModifier(originalDecl, ModifierFlags.Abstract) ? factory.createModifiersFromModifierFlags(ModifierFlags.Abstract) : undefined;
                     const symbolProps = getNonInterhitedProperties(classType, baseTypes, getPropertiesOfType(classType));
                     const publicSymbolProps = filter(symbolProps, s => {
                         // `valueDeclaration` could be undefined if inherited from
@@ -6846,7 +6847,7 @@ namespace ts {
                     context.enclosingDeclaration = oldEnclosing;
                     addResult(setTextRange(factory.createClassDeclaration(
                         /*decorators*/ undefined,
-                        /*modifiers*/ undefined,
+                        modifiers,
                         localName,
                         typeParamDecls,
                         heritageClauses,
@@ -7188,20 +7189,11 @@ namespace ts {
                     initializer: Expression | undefined
                 ) => T, methodKind: SignatureDeclaration["kind"], useAccessors: boolean): (p: Symbol, isStatic: boolean, baseType: Type | undefined) => (T | AccessorDeclaration | (T | AccessorDeclaration)[]) {
                     return function serializePropertySymbol(p: Symbol, isStatic: boolean, baseType: Type | undefined): (T | AccessorDeclaration | (T | AccessorDeclaration)[]) {
+                        if (isOmittedSerializationProperty(p, isStatic, baseType)) {
+                            return [];
+                        }
                         const modifierFlags = getDeclarationModifierFlagsFromSymbol(p);
                         const isPrivate = !!(modifierFlags & ModifierFlags.Private);
-                        if (isStatic && (p.flags & (SymbolFlags.Type | SymbolFlags.Namespace | SymbolFlags.Alias))) {
-                            // Only value-only-meaning symbols can be correctly encoded as class statics, type/namespace/alias meaning symbols
-                            // need to be merged namespace members
-                            return [];
-                        }
-                        if (p.flags & SymbolFlags.Prototype ||
-                            (baseType && getPropertyOfType(baseType, p.escapedName)
-                             && isReadonlySymbol(getPropertyOfType(baseType, p.escapedName)!) === isReadonlySymbol(p)
-                             && (p.flags & SymbolFlags.Optional) === (getPropertyOfType(baseType, p.escapedName)!.flags & SymbolFlags.Optional)
-                             && isTypeIdenticalTo(getTypeOfSymbol(p), getTypeOfPropertyOfType(baseType, p.escapedName)!))) {
-                            return [];
-                        }
                         const flag = (modifierFlags & ~ModifierFlags.Async) | (isStatic ? ModifierFlags.Static : 0);
                         const name = getPropertyNameNodeForSymbol(p, context);
                         const firstPropertyLikeDecl = find(p.declarations, or(isPropertyDeclaration, isAccessor, isVariableDeclaration, isPropertySignature, isBinaryExpression, isPropertyAccessExpression));
@@ -7284,6 +7276,29 @@ namespace ts {
                         // The `Constructor`'s symbol isn't in the class's properties lists, obviously, since it's a signature on the static
                         return Debug.fail(`Unhandled class member kind! ${(p as any).__debugFlags || p.flags}`);
                     };
+                }
+
+                function isOmittedSerializationProperty(prop: Symbol, isStatic: boolean, type: Type | undefined) {
+                    // Only value-only-meaning symbols can be correctly encoded as class statics, type/namespace/alias meaning symbols
+                    // need to be merged namespace members
+                    if (isStatic && (prop.flags & (SymbolFlags.Type | SymbolFlags.Namespace | SymbolFlags.Alias)) || (prop.flags & SymbolFlags.Prototype)) {
+                        return true;
+                    }
+                    if (type) {
+                        const baseProp = getPropertyOfType(type, prop.escapedName);
+                        const basePropType = getTypeOfPropertyOfType(type, prop.escapedName);
+                        if (baseProp && basePropType) {
+                            if (getDeclarationModifierFlagsFromSymbol(baseProp) & ModifierFlags.Abstract) {
+                                return prop === baseProp;
+                            }
+                            return (
+                                (prop.flags & SymbolFlags.Optional) === (baseProp.flags & SymbolFlags.Optional) &&
+                                isReadonlySymbol(baseProp) === isReadonlySymbol(prop) &&
+                                isTypeIdenticalTo(getTypeOfSymbol(prop), basePropType)
+                            );
+                        }
+                    }
+                    return false;
                 }
 
                 function serializePropertySymbolForInterface(p: Symbol, baseType: Type | undefined) {
@@ -28036,7 +28051,7 @@ namespace ts {
                 // In the case of a merged class-module or class-interface declaration,
                 // only the class declaration node will have the Abstract flag set.
                 const valueDecl = expressionType.symbol && getClassLikeDeclarationOfSymbol(expressionType.symbol);
-                if (valueDecl && hasSyntacticModifier(valueDecl, ModifierFlags.Abstract)) {
+                if (valueDecl && hasEffectiveModifier(valueDecl, ModifierFlags.Abstract)) {
                     error(node, Diagnostics.Cannot_create_an_instance_of_an_abstract_class);
                     return resolveErrorCall(node);
                 }
@@ -29531,7 +29546,7 @@ namespace ts {
             if (type && type.flags & TypeFlags.Never) {
                 error(getEffectiveReturnTypeNode(func), Diagnostics.A_function_returning_never_cannot_have_a_reachable_end_point);
             }
-            else if (type && !hasExplicitReturn) {
+            else if (type && !hasExplicitReturn && !hasEffectiveModifier(func, ModifierFlags.Abstract)) {
                 // minimal check: function has syntactic return type annotation and no explicit return statements in the body
                 // this function does not conform to the specification.
                 // NOTE: having returnType !== undefined is a precondition for entering this branch so func.type will always be present
@@ -31899,7 +31914,7 @@ namespace ts {
 
             // Abstract methods cannot have an implementation.
             // Extra checks are to avoid reporting multiple errors relating to the "abstractness" of the node.
-            if (hasSyntacticModifier(node, ModifierFlags.Abstract) && node.kind === SyntaxKind.MethodDeclaration && node.body) {
+            if (isMethodDeclaration(node) && hasAbstractDeclarationBody(node)) {
                 error(node, Diagnostics.Method_0_cannot_have_an_implementation_because_it_is_marked_abstract, declarationNameToString(node.name));
             }
         }
@@ -31996,7 +32011,7 @@ namespace ts {
                 checkSignatureDeclaration(node);
                 if (node.kind === SyntaxKind.GetAccessor) {
                     if (!(node.flags & NodeFlags.Ambient) && nodeIsPresent(node.body) && (node.flags & NodeFlags.HasImplicitReturn)) {
-                        if (!(node.flags & NodeFlags.HasExplicitReturn)) {
+                        if (!(node.flags & NodeFlags.HasExplicitReturn) && !(isInJSFile(node) && hasEffectiveModifier(node, ModifierFlags.Abstract))) {
                             error(node.name, Diagnostics.A_get_accessor_must_return_a_value);
                         }
                     }
@@ -35788,7 +35803,7 @@ namespace ts {
                     // It is an error to inherit an abstract member without implementing it or being declared abstract.
                     // If there is no declaration for the derived class (as in the case of class expressions),
                     // then the class cannot be declared abstract.
-                    if (baseDeclarationFlags & ModifierFlags.Abstract && (!derivedClassDecl || !hasSyntacticModifier(derivedClassDecl, ModifierFlags.Abstract))) {
+                    if (baseDeclarationFlags & ModifierFlags.Abstract && (!derivedClassDecl || !hasEffectiveModifier(derivedClassDecl, ModifierFlags.Abstract))) {
                         // Searches other base types for a declaration that would satisfy the inherited abstract member.
                         // (The class may have more than one base type via declaration merging with an interface with the
                         // same name.)
@@ -35896,7 +35911,7 @@ namespace ts {
                 const properties = getPropertiesOfType(getTypeWithThisArgument(base, type.thisType));
                 for (const prop of properties) {
                     const existing = seen.get(prop.escapedName);
-                    if (existing && !isPropertyIdenticalTo(existing, prop)) {
+                    if (existing && !isPropertyIdenticalTo(existing, prop) && !(getDeclarationModifierFlagsFromSymbol(prop) & ModifierFlags.Abstract)) {
                         seen.delete(prop.escapedName);
                     }
                 }
@@ -39851,7 +39866,7 @@ namespace ts {
                     return grammarErrorAtPos(accessor, accessor.end - 1, ";".length, Diagnostics._0_expected, "{");
                 }
             }
-            if (accessor.body && hasSyntacticModifier(accessor, ModifierFlags.Abstract)) {
+            if (hasAbstractDeclarationBody(accessor)) {
                 return grammarErrorOnNode(accessor, Diagnostics.An_abstract_accessor_cannot_have_an_implementation);
             }
             if (accessor.typeParameters) {
@@ -39879,6 +39894,23 @@ namespace ts {
                 }
             }
             return false;
+        }
+
+        function hasAbstractDeclarationBody(node: MethodDeclaration | AccessorDeclaration) {
+            if (hasEffectiveModifier(node, ModifierFlags.Abstract) && node.body) {
+                if (isInJSFile(node)) {
+                    const statement = singleOrUndefined(node.body.statements);
+                    if (statement && isThrowStatement(statement)) {
+                        return false;
+                    }
+                    const returnType = getReturnTypeOfSignature(getSignatureFromDeclaration(node));
+                    if (returnType === neverType) {
+                        return false;
+                    }
+                    return !!length(node.body.statements);
+                }
+                return true;
+            }
         }
 
         /** Does the accessor have the right number of parameters?

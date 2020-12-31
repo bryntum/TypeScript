@@ -378,6 +378,7 @@ namespace ts {
         JSDocTag,
         JSDocAugmentsTag,
         JSDocImplementsTag,
+        JSDocAbstractTag,
         JSDocAuthorTag,
         JSDocDeprecatedTag,
         JSDocClassTag,
@@ -3164,6 +3165,10 @@ namespace ts {
     export interface JSDocImplementsTag extends JSDocTag {
         readonly kind: SyntaxKind.JSDocImplementsTag;
         readonly class: ExpressionWithTypeArguments & { readonly expression: Identifier | PropertyAccessEntityNameExpression };
+    }
+
+    export interface JSDocAbstractTag extends JSDocTag {
+        readonly kind: SyntaxKind.JSDocAbstractTag;
     }
 
     export interface JSDocAuthorTag extends JSDocTag {
@@ -7160,6 +7165,8 @@ namespace ts {
         updateJSDocAugmentsTag(node: JSDocAugmentsTag, tagName: Identifier | undefined, className: JSDocAugmentsTag["class"], comment: string | undefined): JSDocAugmentsTag;
         createJSDocImplementsTag(tagName: Identifier | undefined, className: JSDocImplementsTag["class"], comment?: string): JSDocImplementsTag;
         updateJSDocImplementsTag(node: JSDocImplementsTag, tagName: Identifier | undefined, className: JSDocImplementsTag["class"], comment: string | undefined): JSDocImplementsTag;
+        createJSDocAbstractTag(tagName: Identifier | undefined, comment?: string): JSDocAbstractTag;
+        updateJSDocAbstractTag(node: JSDocAbstractTag, tagName: Identifier | undefined, comment: string | undefined): JSDocAbstractTag;
         createJSDocAuthorTag(tagName: Identifier | undefined, comment?: string): JSDocAuthorTag;
         updateJSDocAuthorTag(node: JSDocAuthorTag, tagName: Identifier | undefined, comment: string | undefined): JSDocAuthorTag;
         createJSDocClassTag(tagName: Identifier | undefined, comment?: string): JSDocClassTag;

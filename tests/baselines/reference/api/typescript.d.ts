@@ -421,31 +421,32 @@ declare namespace ts {
         JSDocTag = 314,
         JSDocAugmentsTag = 315,
         JSDocImplementsTag = 316,
-        JSDocAuthorTag = 317,
-        JSDocDeprecatedTag = 318,
-        JSDocClassTag = 319,
-        JSDocPublicTag = 320,
-        JSDocPrivateTag = 321,
-        JSDocProtectedTag = 322,
-        JSDocReadonlyTag = 323,
-        JSDocCallbackTag = 324,
-        JSDocEnumTag = 325,
-        JSDocParameterTag = 326,
-        JSDocReturnTag = 327,
-        JSDocThisTag = 328,
-        JSDocTypeTag = 329,
-        JSDocTemplateTag = 330,
-        JSDocTypedefTag = 331,
-        JSDocSeeTag = 332,
-        JSDocPropertyTag = 333,
-        SyntaxList = 334,
-        NotEmittedStatement = 335,
-        PartiallyEmittedExpression = 336,
-        CommaListExpression = 337,
-        MergeDeclarationMarker = 338,
-        EndOfDeclarationMarker = 339,
-        SyntheticReferenceExpression = 340,
-        Count = 341,
+        JSDocAbstractTag = 317,
+        JSDocAuthorTag = 318,
+        JSDocDeprecatedTag = 319,
+        JSDocClassTag = 320,
+        JSDocPublicTag = 321,
+        JSDocPrivateTag = 322,
+        JSDocProtectedTag = 323,
+        JSDocReadonlyTag = 324,
+        JSDocCallbackTag = 325,
+        JSDocEnumTag = 326,
+        JSDocParameterTag = 327,
+        JSDocReturnTag = 328,
+        JSDocThisTag = 329,
+        JSDocTypeTag = 330,
+        JSDocTemplateTag = 331,
+        JSDocTypedefTag = 332,
+        JSDocSeeTag = 333,
+        JSDocPropertyTag = 334,
+        SyntaxList = 335,
+        NotEmittedStatement = 336,
+        PartiallyEmittedExpression = 337,
+        CommaListExpression = 338,
+        MergeDeclarationMarker = 339,
+        EndOfDeclarationMarker = 340,
+        SyntheticReferenceExpression = 341,
+        Count = 342,
         FirstAssignment = 62,
         LastAssignment = 77,
         FirstCompoundAssignment = 63,
@@ -474,9 +475,9 @@ declare namespace ts {
         LastStatement = 248,
         FirstNode = 157,
         FirstJSDocNode = 301,
-        LastJSDocNode = 333,
+        LastJSDocNode = 334,
         FirstJSDocTagNode = 314,
-        LastJSDocTagNode = 333,
+        LastJSDocTagNode = 334,
     }
     export type TriviaSyntaxKind = SyntaxKind.SingleLineCommentTrivia | SyntaxKind.MultiLineCommentTrivia | SyntaxKind.NewLineTrivia | SyntaxKind.WhitespaceTrivia | SyntaxKind.ShebangTrivia | SyntaxKind.ConflictMarkerTrivia;
     export type LiteralSyntaxKind = SyntaxKind.NumericLiteral | SyntaxKind.BigIntLiteral | SyntaxKind.StringLiteral | SyntaxKind.JsxText | SyntaxKind.JsxTextAllWhiteSpaces | SyntaxKind.RegularExpressionLiteral | SyntaxKind.NoSubstitutionTemplateLiteral;
@@ -1767,6 +1768,9 @@ declare namespace ts {
         readonly class: ExpressionWithTypeArguments & {
             readonly expression: Identifier | PropertyAccessEntityNameExpression;
         };
+    }
+    export interface JSDocAbstractTag extends JSDocTag {
+        readonly kind: SyntaxKind.JSDocAbstractTag;
     }
     export interface JSDocAuthorTag extends JSDocTag {
         readonly kind: SyntaxKind.JSDocAuthorTag;
@@ -3479,6 +3483,8 @@ declare namespace ts {
         updateJSDocAugmentsTag(node: JSDocAugmentsTag, tagName: Identifier | undefined, className: JSDocAugmentsTag["class"], comment: string | undefined): JSDocAugmentsTag;
         createJSDocImplementsTag(tagName: Identifier | undefined, className: JSDocImplementsTag["class"], comment?: string): JSDocImplementsTag;
         updateJSDocImplementsTag(node: JSDocImplementsTag, tagName: Identifier | undefined, className: JSDocImplementsTag["class"], comment: string | undefined): JSDocImplementsTag;
+        createJSDocAbstractTag(tagName: Identifier | undefined, comment?: string): JSDocAbstractTag;
+        updateJSDocAbstractTag(node: JSDocAbstractTag, tagName: Identifier | undefined, comment: string | undefined): JSDocAbstractTag;
         createJSDocAuthorTag(tagName: Identifier | undefined, comment?: string): JSDocAuthorTag;
         updateJSDocAuthorTag(node: JSDocAuthorTag, tagName: Identifier | undefined, comment: string | undefined): JSDocAuthorTag;
         createJSDocClassTag(tagName: Identifier | undefined, comment?: string): JSDocClassTag;
@@ -4141,6 +4147,7 @@ declare namespace ts {
     function getJSDocProtectedTag(node: Node): JSDocProtectedTag | undefined;
     /** Gets the JSDoc protected tag for the node if present */
     function getJSDocReadonlyTag(node: Node): JSDocReadonlyTag | undefined;
+    function getJSDocAbstractTagNoCache(node: Node): JSDocAbstractTag | undefined;
     /** Gets the JSDoc deprecated tag for the node if present */
     function getJSDocDeprecatedTag(node: Node): JSDocDeprecatedTag | undefined;
     /** Gets the JSDoc enum tag for the node if present */
@@ -4499,6 +4506,7 @@ declare namespace ts {
     function isJSDocTypeLiteral(node: Node): node is JSDocTypeLiteral;
     function isJSDocSignature(node: Node): node is JSDocSignature;
     function isJSDocAugmentsTag(node: Node): node is JSDocAugmentsTag;
+    function isJSDocAbstractTag(node: Node): node is JSDocAbstractTag;
     function isJSDocAuthorTag(node: Node): node is JSDocAuthorTag;
     function isJSDocClassTag(node: Node): node is JSDocClassTag;
     function isJSDocCallbackTag(node: Node): node is JSDocCallbackTag;
