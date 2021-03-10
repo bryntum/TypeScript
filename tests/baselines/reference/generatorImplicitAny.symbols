@@ -59,3 +59,25 @@ function* g6() {
     f<string>(yield); // ok, contextually typed by f<string>
 >f : Symbol(f, Decl(generatorImplicitAny.ts, 3, 30))
 }
+
+function* g7() {
+>g7 : Symbol(g7, Decl(generatorImplicitAny.ts, 30, 1))
+
+    const { a } = yield;                 // error: implicit any
+>a : Symbol(a, Decl(generatorImplicitAny.ts, 33, 11))
+
+    const { b }: { b: string } = yield;  // ok
+>b : Symbol(b, Decl(generatorImplicitAny.ts, 34, 11))
+>b : Symbol(b, Decl(generatorImplicitAny.ts, 34, 18))
+}
+
+function* g8() {
+>g8 : Symbol(g8, Decl(generatorImplicitAny.ts, 35, 1))
+
+    const [a] = yield;         // error: implicit any
+>a : Symbol(a, Decl(generatorImplicitAny.ts, 38, 11))
+
+    const [b]: [string] = yield; // ok
+>b : Symbol(b, Decl(generatorImplicitAny.ts, 39, 11))
+}
+

@@ -31591,7 +31591,7 @@ namespace ts {
             if (!type) {
                 type = anyType;
                 if (produceDiagnostics && noImplicitAny && !expressionResultIsUnused(node)) {
-                    const contextualType = getContextualType(node);
+                    const contextualType = getContextualType(node, ContextFlags.SkipBindingPatterns);
                     if (!contextualType || isTypeAny(contextualType)) {
                         error(node, Diagnostics.yield_expression_implicitly_results_in_an_any_type_because_its_containing_generator_lacks_a_return_type_annotation);
                     }

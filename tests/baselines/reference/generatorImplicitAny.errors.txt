@@ -1,8 +1,11 @@
 tests/cases/conformance/generators/generatorImplicitAny.ts(8,19): error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
 tests/cases/conformance/generators/generatorImplicitAny.ts(26,7): error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
+tests/cases/conformance/generators/generatorImplicitAny.ts(34,19): error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
+tests/cases/conformance/generators/generatorImplicitAny.ts(38,11): error TS7010: 'g8', which lacks return-type annotation, implicitly has an '[any] & [string]' return type.
+tests/cases/conformance/generators/generatorImplicitAny.ts(39,17): error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
 
 
-==== tests/cases/conformance/generators/generatorImplicitAny.ts (2 errors) ====
+==== tests/cases/conformance/generators/generatorImplicitAny.ts (5 errors) ====
     function* g() {}
     
     // https://github.com/microsoft/TypeScript/issues/35105
@@ -38,3 +41,20 @@ tests/cases/conformance/generators/generatorImplicitAny.ts(26,7): error TS7057: 
     function* g6() {
         f<string>(yield); // ok, contextually typed by f<string>
     }
+    
+    function* g7() {
+        const { a } = yield;                 // error: implicit any
+                      ~~~~~
+!!! error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
+        const { b }: { b: string } = yield;  // ok
+    }
+    
+    function* g8() {
+              ~~
+!!! error TS7010: 'g8', which lacks return-type annotation, implicitly has an '[any] & [string]' return type.
+        const [a] = yield;         // error: implicit any
+                    ~~~~~
+!!! error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
+        const [b]: [string] = yield; // ok
+    }
+    

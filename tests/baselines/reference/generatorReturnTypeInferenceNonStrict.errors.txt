@@ -4,10 +4,11 @@ tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(74,1
 tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(79,11): error TS7055: 'g301', which lacks return-type annotation, implicitly has an 'any' yield type.
 tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(89,11): error TS7055: 'g303', which lacks return-type annotation, implicitly has an 'any' yield type.
 tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(126,11): error TS7055: 'g310', which lacks return-type annotation, implicitly has an 'any' yield type.
+tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(127,25): error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
 tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(131,10): error TS7025: Generator implicitly has yield type 'any' because it does not yield any values. Consider supplying a return type annotation.
 
 
-==== tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts (7 errors) ====
+==== tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts (8 errors) ====
     declare const iterableIterator: IterableIterator<number>;
     declare const generator: Generator<number, string, boolean>;
     declare const never: never;
@@ -147,6 +148,8 @@ tests/cases/conformance/generators/generatorReturnTypeInferenceNonStrict.ts(131,
               ~~~~
 !!! error TS7055: 'g310', which lacks return-type annotation, implicitly has an 'any' yield type.
     	const [a = 1, b = 2] = yield;
+    	                       ~~~~~
+!!! error TS7057: 'yield' expression implicitly results in an 'any' type because its containing generator lacks a return-type annotation.
     }
     
     function* g311() { // Generator<any (implicit), void, string>

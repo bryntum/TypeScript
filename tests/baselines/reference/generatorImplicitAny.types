@@ -89,3 +89,29 @@ function* g6() {
 >f : <T>(value: T) => void
 >yield : any
 }
+
+function* g7() {
+>g7 : () => Generator<undefined, void, { a: any; } & { b: string; }>
+
+    const { a } = yield;                 // error: implicit any
+>a : any
+>yield : any
+
+    const { b }: { b: string } = yield;  // ok
+>b : string
+>b : string
+>yield : any
+}
+
+function* g8() {
+>g8 : () => Generator<undefined, void, [any] & [string]>
+
+    const [a] = yield;         // error: implicit any
+>a : any
+>yield : any
+
+    const [b]: [string] = yield; // ok
+>b : string
+>yield : any
+}
+

@@ -31,6 +31,17 @@ function* g6() {
     f<string>(yield); // ok, contextually typed by f<string>
 }
 
+function* g7() {
+    const { a } = yield;                 // error: implicit any
+    const { b }: { b: string } = yield;  // ok
+}
+
+function* g8() {
+    const [a] = yield;         // error: implicit any
+    const [b]: [string] = yield; // ok
+}
+
+
 //// [generatorImplicitAny.js]
 function* g() { }
 function* g2() {
@@ -54,4 +65,12 @@ function* g5() {
 }
 function* g6() {
     f(yield); // ok, contextually typed by f<string>
+}
+function* g7() {
+    const { a } = yield; // error: implicit any
+    const { b } = yield; // ok
+}
+function* g8() {
+    const [a] = yield; // error: implicit any
+    const [b] = yield; // ok
 }
