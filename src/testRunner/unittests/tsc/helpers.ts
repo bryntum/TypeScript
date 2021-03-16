@@ -1,6 +1,6 @@
 namespace ts {
     export type TscCompileSystem = fakes.System & {
-        writtenFiles: Set<string>;
+        writtenFiles: Set<Path>;
         baseLine(): { file: string; text: string; };
     };
 
@@ -29,6 +29,7 @@ namespace ts {
         baselineSourceMap?: boolean;
         baselineReadFileCalls?: boolean;
         baselinePrograms?: boolean;
+        baselineDependencies?: boolean;
     }
 
     export type CommandLineProgram = [Program, EmitAndSemanticDiagnosticsBuilderProgram?];
@@ -41,22 +42,23 @@ namespace ts {
         return !!(program as Program | EmitAndSemanticDiagnosticsBuilderProgram).getCompilerOptions;
     }
     export function commandLineCallbacks(
-        sys: System & { writtenFiles: ReadonlyCollection<string>; },
-        originalReadCall?: System["readFile"]
+        sys: System & { writtenFiles: ReadonlyCollection<Path>; },
+        originalReadCall?: System["readFile"],
+        originalWriteFile?: System["writeFile"],
     ): CommandLineCallbacks {
         let programs: CommandLineProgram[] | undefined;
 
         return {
             cb: program => {
                 if (isAnyProgram(program)) {
-                    baselineBuildInfo(program.getCompilerOptions(), sys, originalReadCall);
+                    baselineBuildInfo(program.getCompilerOptions(), sys, originalReadCall, originalWriteFile);
                     (programs || (programs = [])).push(isBuilderProgram(program) ?
                         [program.getProgram(), program] :
                         [program]
                     );
                 }
                 else {
-                    baselineBuildInfo(program.options, sys, originalReadCall);
+                    baselineBuildInfo(program.options, sys, originalReadCall, originalWriteFile);
                 }
             },
             getPrograms: () => {
@@ -73,7 +75,7 @@ namespace ts {
         const {
             scenario, subScenario, buildKind,
             commandLineArgs, modifyFs,
-            baselineSourceMap, baselineReadFileCalls, baselinePrograms
+            baselineSourceMap, baselineReadFileCalls, baselinePrograms, baselineDependencies
         } = input;
         if (modifyFs) modifyFs(inputFs);
         inputFs.makeReadonly();
@@ -82,11 +84,12 @@ namespace ts {
         // Create system
         const sys = new fakes.System(fs, { executingFilePath: "/lib/tsc" }) as TscCompileSystem;
         fakes.patchHostForBuildInfoReadWrite(sys);
-        const writtenFiles = sys.writtenFiles = new Set<string>();
+        const writtenFiles = sys.writtenFiles = new Set();
         const originalWriteFile = sys.writeFile;
         sys.writeFile = (fileName, content, writeByteOrderMark) => {
-            assert.isFalse(writtenFiles.has(fileName));
-            writtenFiles.add(fileName);
+            const path = toPathWithSystem(sys, fileName);
+            assert.isFalse(writtenFiles.has(path));
+            writtenFiles.add(path);
             return originalWriteFile.call(sys, fileName, content, writeByteOrderMark);
         };
         const actualReadFileMap: MapLike<number> = {};
@@ -101,7 +104,7 @@ namespace ts {
 
         sys.write(`${sys.getExecutingFilePath()} ${commandLineArgs.join(" ")}\n`);
         sys.exit = exitCode => sys.exitCode = exitCode;
-        const { cb, getPrograms } = commandLineCallbacks(sys, originalReadFile);
+        const { cb, getPrograms } = commandLineCallbacks(sys, originalReadFile, originalWriteFile);
         executeCommandLine(
             sys,
             cb,
@@ -110,7 +113,7 @@ namespace ts {
         sys.write(`exitCode:: ExitStatus.${ExitStatus[sys.exitCode as ExitStatus]}\n`);
         if (baselinePrograms) {
             const baseline: string[] = [];
-            tscWatch.baselinePrograms(baseline, getPrograms);
+            tscWatch.baselinePrograms(baseline, getPrograms, baselineDependencies);
             sys.write(baseline.join("\n"));
         }
         if (baselineReadFileCalls) {
