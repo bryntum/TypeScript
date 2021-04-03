@@ -41173,10 +41173,10 @@ namespace ts {
                 }
             }
             if (hasAbstractDeclarationBody(accessor)) {
-                if (accessor.body && (accessor.parent.kind === SyntaxKind.TypeLiteral || accessor.parent.kind === SyntaxKind.InterfaceDeclaration)) {
-                    return grammarErrorOnNode(accessor.body, Diagnostics.An_implementation_cannot_be_declared_in_ambient_contexts);
-                }
                 return grammarErrorOnNode(accessor, Diagnostics.An_abstract_accessor_cannot_have_an_implementation);
+            }
+            if (accessor.body && (accessor.parent.kind === SyntaxKind.TypeLiteral || accessor.parent.kind === SyntaxKind.InterfaceDeclaration)) {
+                return grammarErrorOnNode(accessor.body, Diagnostics.An_implementation_cannot_be_declared_in_ambient_contexts);
             }
             if (accessor.typeParameters) {
                 return grammarErrorOnNode(accessor.name, Diagnostics.An_accessor_cannot_have_type_parameters);
