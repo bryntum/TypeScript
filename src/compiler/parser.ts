@@ -481,12 +481,12 @@ namespace ts {
                 return visitNodes(cbNode, cbNodes, (<JSDocFunctionType>node).parameters) ||
                     visitNode(cbNode, (<JSDocFunctionType>node).type);
             case SyntaxKind.JSDocComment:
-                return visitNodes(cbNode, cbNodes, (node as JSDoc).comment)
+                return (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined))
                     || visitNodes(cbNode, cbNodes, (node as JSDoc).tags);
             case SyntaxKind.JSDocSeeTag:
                 return visitNode(cbNode, (node as JSDocSeeTag).tagName) ||
                     visitNode(cbNode, (node as JSDocSeeTag).name) ||
-                    visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocNameReference:
                 return visitNode(cbNode, (node as JSDocNameReference).name);
             case SyntaxKind.JSDocParameterTag:
@@ -495,47 +495,48 @@ namespace ts {
                     ((node as JSDocPropertyLikeTag).isNameFirst
                         ? visitNode(cbNode, (<JSDocPropertyLikeTag>node).name) ||
                             visitNode(cbNode, (<JSDocPropertyLikeTag>node).typeExpression) ||
-                            visitNodes(cbNode, cbNodes, (node as JSDocTag).comment)
+                            (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined))
                         : visitNode(cbNode, (<JSDocPropertyLikeTag>node).typeExpression) ||
                             visitNode(cbNode, (<JSDocPropertyLikeTag>node).name)) ||
-                            visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                            (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocAuthorTag:
-                return visitNode(cbNode, (node as JSDocTag).tagName);
+                return visitNode(cbNode, (node as JSDocTag).tagName) ||
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocImplementsTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName) ||
                     visitNode(cbNode, (<JSDocImplementsTag>node).class) ||
-                    visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocAugmentsTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName) ||
                     visitNode(cbNode, (<JSDocAugmentsTag>node).class) ||
-                    visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocTemplateTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName) ||
                     visitNode(cbNode, (<JSDocTemplateTag>node).constraint) ||
                     visitNodes(cbNode, cbNodes, (<JSDocTemplateTag>node).typeParameters) ||
-                    visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocTypedefTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName) ||
                     ((node as JSDocTypedefTag).typeExpression &&
                         (node as JSDocTypedefTag).typeExpression!.kind === SyntaxKind.JSDocTypeExpression
                         ? visitNode(cbNode, (<JSDocTypedefTag>node).typeExpression) ||
                             visitNode(cbNode, (<JSDocTypedefTag>node).fullName) ||
-                            visitNodes(cbNode, cbNodes, (node as JSDocTag).comment)
+                            (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined))
                         : visitNode(cbNode, (<JSDocTypedefTag>node).fullName) ||
                             visitNode(cbNode, (<JSDocTypedefTag>node).typeExpression)) ||
-                            visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                            (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocCallbackTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName) ||
                     visitNode(cbNode, (node as JSDocCallbackTag).fullName) ||
                     visitNode(cbNode, (node as JSDocCallbackTag).typeExpression) ||
-                    visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocReturnTag:
             case SyntaxKind.JSDocTypeTag:
             case SyntaxKind.JSDocThisTag:
             case SyntaxKind.JSDocEnumTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName) ||
                     visitNode(cbNode, (node as JSDocReturnTag | JSDocTypeTag | JSDocThisTag | JSDocEnumTag).typeExpression) ||
-                    visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                    (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.JSDocSignature:
                 return forEach((<JSDocSignature>node).typeParameters, cbNode) ||
                     forEach((<JSDocSignature>node).parameters, cbNode) ||
@@ -551,8 +552,9 @@ namespace ts {
             case SyntaxKind.JSDocPrivateTag:
             case SyntaxKind.JSDocProtectedTag:
             case SyntaxKind.JSDocReadonlyTag:
+            case SyntaxKind.JSDocDeprecatedTag:
                 return visitNode(cbNode, (node as JSDocTag).tagName)
-                 || visitNodes(cbNode, cbNodes, (node as JSDocTag).comment);
+                 || (typeof (node as JSDoc).comment === "string" ? undefined : visitNodes(cbNode, cbNodes, (node as JSDoc).comment as NodeArray<JSDocText | JSDocLink> | undefined));
             case SyntaxKind.PartiallyEmittedExpression:
                 return visitNode(cbNode, (<PartiallyEmittedExpression>node).expression);
         }
@@ -1014,7 +1016,7 @@ namespace ts {
             jsDocDiagnostics = undefined!;
             parsingContext = 0;
             identifiers = undefined!;
-            notParenthesizedArrow = undefined!;
+            notParenthesizedArrow = undefined;
             topLevel = true;
         }
 
@@ -1335,24 +1337,27 @@ namespace ts {
             return inContext(NodeFlags.AwaitContext);
         }
 
-        function parseErrorAtCurrentToken(message: DiagnosticMessage, arg0?: any): void {
-            parseErrorAt(scanner.getTokenPos(), scanner.getTextPos(), message, arg0);
+        function parseErrorAtCurrentToken(message: DiagnosticMessage, arg0?: any): DiagnosticWithDetachedLocation | undefined {
+            return parseErrorAt(scanner.getTokenPos(), scanner.getTextPos(), message, arg0);
         }
 
-        function parseErrorAtPosition(start: number, length: number, message: DiagnosticMessage, arg0?: any): void {
+        function parseErrorAtPosition(start: number, length: number, message: DiagnosticMessage, arg0?: any): DiagnosticWithDetachedLocation | undefined {
             // Don't report another error if it would just be at the same position as the last error.
             const lastError = lastOrUndefined(parseDiagnostics);
+            let result: DiagnosticWithDetachedLocation | undefined;
             if (!lastError || start !== lastError.start) {
-                parseDiagnostics.push(createDetachedDiagnostic(fileName, start, length, message, arg0));
+                result = createDetachedDiagnostic(fileName, start, length, message, arg0);
+                parseDiagnostics.push(result);
             }
 
             // Mark that we've encountered an error.  We'll set an appropriate bit on the next
             // node we finish so that it can't be reused incrementally.
             parseErrorBeforeNextFinishedNode = true;
+            return result;
         }
 
-        function parseErrorAt(start: number, end: number, message: DiagnosticMessage, arg0?: any): void {
-            parseErrorAtPosition(start, end - start, message, arg0);
+        function parseErrorAt(start: number, end: number, message: DiagnosticMessage, arg0?: any): DiagnosticWithDetachedLocation | undefined {
+            return parseErrorAtPosition(start, end - start, message, arg0);
         }
 
         function parseErrorAtRange(range: TextRange, message: DiagnosticMessage, arg0?: any): void {
@@ -1540,6 +1545,20 @@ namespace ts {
             }
             parseErrorAtCurrentToken(Diagnostics._0_expected, tokenToString(kind));
             return false;
+        }
+
+        function parseExpectedMatchingBrackets(openKind: SyntaxKind, closeKind: SyntaxKind, openPosition: number) {
+            if (token() === closeKind) {
+                nextToken();
+                return;
+            }
+            const lastError = parseErrorAtCurrentToken(Diagnostics._0_expected, tokenToString(closeKind));
+            if (lastError) {
+                addRelatedInfo(
+                    lastError,
+                    createDetachedDiagnostic(fileName, openPosition, 1, Diagnostics.The_parser_expected_to_find_a_1_to_match_the_0_token_here, tokenToString(openKind), tokenToString(closeKind))
+                );
+            }
         }
 
         function parseOptional(t: SyntaxKind): boolean {
@@ -2092,8 +2111,7 @@ namespace ts {
 
             while (!isListTerminator(kind)) {
                 if (isListElement(kind, /*inErrorRecovery*/ false)) {
-                    const element = parseListElement(kind, parseElement);
-                    list.push(element);
+                    list.push(parseListElement(kind, parseElement));
 
                     continue;
                 }
@@ -3213,7 +3231,10 @@ namespace ts {
 
         function isTypeMemberStart(): boolean {
             // Return true if we have the start of a signature member
-            if (token() === SyntaxKind.OpenParenToken || token() === SyntaxKind.LessThanToken) {
+            if (token() === SyntaxKind.OpenParenToken ||
+                token() === SyntaxKind.LessThanToken ||
+                token() === SyntaxKind.GetKeyword ||
+                token() === SyntaxKind.SetKeyword) {
                 return true;
             }
             let idToken = false;
@@ -3254,6 +3275,14 @@ namespace ts {
             const pos = getNodePos();
             const hasJSDoc = hasPrecedingJSDocComment();
             const modifiers = parseModifiers();
+            if (parseContextualModifier(SyntaxKind.GetKeyword)) {
+                return parseAccessorDeclaration(pos, hasJSDoc, /*decorators*/ undefined, modifiers, SyntaxKind.GetAccessor);
+            }
+
+            if (parseContextualModifier(SyntaxKind.SetKeyword)) {
+                return parseAccessorDeclaration(pos, hasJSDoc, /*decorators*/ undefined, modifiers, SyntaxKind.SetAccessor);
+            }
+
             if (isIndexSignature()) {
                 return parseIndexSignatureDeclaration(pos, hasJSDoc, /*decorators*/ undefined, modifiers);
             }
@@ -5415,10 +5444,11 @@ namespace ts {
 
         function parseArrayLiteralExpression(): ArrayLiteralExpression {
             const pos = getNodePos();
+            const openBracketPosition = scanner.getTokenPos();
             parseExpected(SyntaxKind.OpenBracketToken);
             const multiLine = scanner.hasPrecedingLineBreak();
             const elements = parseDelimitedList(ParsingContext.ArrayLiteralMembers, parseArgumentOrArrayLiteralElement);
-            parseExpected(SyntaxKind.CloseBracketToken);
+            parseExpectedMatchingBrackets(SyntaxKind.OpenBracketToken, SyntaxKind.CloseBracketToken, openBracketPosition);
             return finishNode(factory.createArrayLiteralExpression(elements, multiLine), pos);
         }
 
@@ -5487,15 +5517,7 @@ namespace ts {
             parseExpected(SyntaxKind.OpenBraceToken);
             const multiLine = scanner.hasPrecedingLineBreak();
             const properties = parseDelimitedList(ParsingContext.ObjectLiteralMembers, parseObjectLiteralElement, /*considerSemicolonAsDelimiter*/ true);
-            if (!parseExpected(SyntaxKind.CloseBraceToken)) {
-                const lastError = lastOrUndefined(parseDiagnostics);
-                if (lastError && lastError.code === Diagnostics._0_expected.code) {
-                    addRelatedInfo(
-                        lastError,
-                        createDetachedDiagnostic(fileName, openBracePosition, 1, Diagnostics.The_parser_expected_to_find_a_to_match_the_token_here)
-                    );
-                }
-            }
+            parseExpectedMatchingBrackets(SyntaxKind.OpenBraceToken, SyntaxKind.CloseBraceToken, openBracePosition);
             return finishNode(factory.createObjectLiteralExpression(properties, multiLine), pos);
         }
 
@@ -5580,16 +5602,14 @@ namespace ts {
             if (parseExpected(SyntaxKind.OpenBraceToken, diagnosticMessage) || ignoreMissingOpenBrace) {
                 const multiLine = scanner.hasPrecedingLineBreak();
                 const statements = parseList(ParsingContext.BlockStatements, parseStatement);
-                if (!parseExpected(SyntaxKind.CloseBraceToken)) {
-                    const lastError = lastOrUndefined(parseDiagnostics);
-                    if (lastError && lastError.code === Diagnostics._0_expected.code) {
-                        addRelatedInfo(
-                            lastError,
-                            createDetachedDiagnostic(fileName, openBracePosition, 1, Diagnostics.The_parser_expected_to_find_a_to_match_the_token_here)
-                        );
-                    }
+                parseExpectedMatchingBrackets(SyntaxKind.OpenBraceToken, SyntaxKind.CloseBraceToken, openBracePosition);
+                const result = finishNode(factory.createBlock(statements, multiLine), pos);
+                if (token() === SyntaxKind.EqualsToken) {
+                    parseErrorAtCurrentToken(Diagnostics.Declaration_or_statement_expected_This_follows_a_block_of_statements_so_if_you_intended_to_write_a_destructuring_assignment_you_might_need_to_wrap_the_the_whole_assignment_in_parentheses);
+                    nextToken();
                 }
-                return finishNode(factory.createBlock(statements, multiLine), pos);
+
+                return result;
             }
             else {
                 const statements = createMissingList<Statement>();
@@ -5636,9 +5656,10 @@ namespace ts {
         function parseIfStatement(): IfStatement {
             const pos = getNodePos();
             parseExpected(SyntaxKind.IfKeyword);
+            const openParenPosition = scanner.getTokenPos();
             parseExpected(SyntaxKind.OpenParenToken);
             const expression = allowInAnd(parseExpression);
-            parseExpected(SyntaxKind.CloseParenToken);
+            parseExpectedMatchingBrackets(SyntaxKind.OpenParenToken, SyntaxKind.CloseParenToken, openParenPosition);
             const thenStatement = parseStatement();
             const elseStatement = parseOptional(SyntaxKind.ElseKeyword) ? parseStatement() : undefined;
             return finishNode(factory.createIfStatement(expression, thenStatement, elseStatement), pos);
@@ -5649,9 +5670,10 @@ namespace ts {
             parseExpected(SyntaxKind.DoKeyword);
             const statement = parseStatement();
             parseExpected(SyntaxKind.WhileKeyword);
+            const openParenPosition = scanner.getTokenPos();
             parseExpected(SyntaxKind.OpenParenToken);
             const expression = allowInAnd(parseExpression);
-            parseExpected(SyntaxKind.CloseParenToken);
+            parseExpectedMatchingBrackets(SyntaxKind.OpenParenToken, SyntaxKind.CloseParenToken, openParenPosition);
 
             // From: https://mail.mozilla.org/pipermail/es-discuss/2011-August/016188.html
             // 157 min --- All allen at wirfs-brock.com CONF --- "do{;}while(false)false" prohibited in
@@ -5664,9 +5686,10 @@ namespace ts {
         function parseWhileStatement(): WhileStatement {
             const pos = getNodePos();
             parseExpected(SyntaxKind.WhileKeyword);
+            const openParenPosition = scanner.getTokenPos();
             parseExpected(SyntaxKind.OpenParenToken);
             const expression = allowInAnd(parseExpression);
-            parseExpected(SyntaxKind.CloseParenToken);
+            parseExpectedMatchingBrackets(SyntaxKind.OpenParenToken, SyntaxKind.CloseParenToken, openParenPosition);
             const statement = parseStatement();
             return finishNode(factory.createWhileStatement(expression, statement), pos);
         }
@@ -5738,9 +5761,10 @@ namespace ts {
         function parseWithStatement(): WithStatement {
             const pos = getNodePos();
             parseExpected(SyntaxKind.WithKeyword);
+            const openParenPosition = scanner.getTokenPos();
             parseExpected(SyntaxKind.OpenParenToken);
             const expression = allowInAnd(parseExpression);
-            parseExpected(SyntaxKind.CloseParenToken);
+            parseExpectedMatchingBrackets(SyntaxKind.OpenParenToken, SyntaxKind.CloseParenToken, openParenPosition);
             const statement = doInsideOfContext(NodeFlags.InWithStatement, parseStatement);
             return finishNode(factory.createWithStatement(expression, statement), pos);
         }
@@ -7413,6 +7437,7 @@ namespace ts {
                                 state = JSDocState.SavingComments;
                                 const commentEnd = scanner.getStartPos();
                                 const linkStart = scanner.getTextPos() - 1;
+                                // TODO: redo here
                                 const link = parseJSDocLink(linkStart);
                                 if (link) {
                                     if (!linkEnd) {
@@ -7436,12 +7461,12 @@ namespace ts {
                         nextTokenJSDoc();
                     }
                     removeTrailingWhitespace(comments);
-                    if (comments.length) {
+                    if (parts.length && comments.length) {
                         parts.push(finishNode(factory.createJSDocText(comments.join("")), linkEnd ?? start, commentsPos));
                     }
                     if (parts.length && tags) Debug.assertIsDefined(commentsPos, "having parsed tags implies that the end of the comment span should be set");
                     const tagsArray = tags && createNodeArray(tags, tagsPos, tagsEnd);
-                    return finishNode(factory.createJSDocComment(parts.length ? createNodeArray(parts, start, commentsPos) : undefined, tagsArray), start, end);
+                    return finishNode(factory.createJSDocComment(parts.length ? createNodeArray(parts, start, commentsPos) : comments.length ? comments.join("") : undefined, tagsArray), start, end);
                 });
 
                 function removeLeadingNewlines(comments: string[]) {
@@ -7544,6 +7569,9 @@ namespace ts {
                         case "readonly":
                             tag = parseSimpleTag(start, factory.createJSDocReadonlyTag, tagName, margin, indentText);
                             break;
+                        case "override":
+                            tag = parseSimpleTag(start, factory.createJSDocOverrideTag, tagName, margin, indentText);
+                            break;
                         case "deprecated":
                             hasDeprecatedTag = true;
                             tag = parseSimpleTag(start, factory.createJSDocDeprecatedTag, tagName, margin, indentText);
@@ -7592,7 +7620,7 @@ namespace ts {
                     return parseTagComments(margin, indentText.slice(margin));
                 }
 
-                function parseTagComments(indent: number, initialMargin?: string): NodeArray<JSDocText | JSDocLink> | undefined {
+                function parseTagComments(indent: number, initialMargin?: string): string | NodeArray<JSDocText | JSDocLink> | undefined {
                     const commentsPos = getNodePos();
                     let comments: string[] = [];
                     const parts: (JSDocLink | JSDocText)[] = [];
@@ -7693,11 +7721,14 @@ namespace ts {
 
                     removeLeadingNewlines(comments);
                     removeTrailingWhitespace(comments);
-                    if (comments.length) {
-                        parts.push(finishNode(factory.createJSDocText(comments.join("")), linkEnd ?? commentsPos));
-                    }
                     if (parts.length) {
+                        if (comments.length) {
+                            parts.push(finishNode(factory.createJSDocText(comments.join("")), linkEnd ?? commentsPos));
+                        }
                         return createNodeArray(parts, commentsPos, scanner.getTextPos());
+                    }
+                    else if (comments.length) {
+                        return comments.join("");
                     }
                 }
 
@@ -7712,7 +7743,7 @@ namespace ts {
                         ? parseEntityName(/*allowReservedWords*/ true)
                         : undefined;
                     const text = [];
-                    while (token() !== SyntaxKind.CloseBraceToken && token() !== SyntaxKind.NewLineTrivia) {
+                    while (token() !== SyntaxKind.CloseBraceToken && token() !== SyntaxKind.NewLineTrivia && token() !== SyntaxKind.EndOfFileToken) {
                         text.push(scanner.getTokenText());
                         nextTokenJSDoc();
                     }
@@ -7862,8 +7893,10 @@ namespace ts {
                     if (!comments) {
                         commentEnd = scanner.getStartPos();
                     }
-                    const allParts = concatenate([finishNode(textOnly, commentStart, commentEnd)], comments) as (JSDocText | JSDocLink)[]; // cast away readonly
-                    return finishNode(factory.createJSDocAuthorTag(tagName, createNodeArray(allParts, commentStart)), start);
+                    const allParts = typeof comments !== "string"
+                        ? createNodeArray(concatenate([finishNode(textOnly, commentStart, commentEnd)], comments) as (JSDocText | JSDocLink)[], commentStart) // cast away readonly
+                        : textOnly.text + comments;
+                    return finishNode(factory.createJSDocAuthorTag(tagName, allParts), start);
                 }
 
                 function parseAuthorNameAndEmail(): JSDocText {
@@ -7922,7 +7955,7 @@ namespace ts {
                     return node;
                 }
 
-                function parseSimpleTag(start: number, createTag: (tagName: Identifier | undefined, comment?: NodeArray<JSDocText | JSDocLink>) => JSDocTag, tagName: Identifier, margin: number, indentText: string): JSDocTag {
+                function parseSimpleTag(start: number, createTag: (tagName: Identifier | undefined, comment?: string | NodeArray<JSDocText | JSDocLink>) => JSDocTag, tagName: Identifier, margin: number, indentText: string): JSDocTag {
                     return finishNode(createTag(tagName, parseTrailingTagComments(start, getNodePos(), margin, indentText)), start);
                 }
 
@@ -7956,13 +7989,9 @@ namespace ts {
                             hasChildren = true;
                             if (child.kind === SyntaxKind.JSDocTypeTag) {
                                 if (childTypeTag) {
-                                    parseErrorAtCurrentToken(Diagnostics.A_JSDoc_typedef_comment_may_not_contain_multiple_type_tags);
-                                    const lastError = lastOrUndefined(parseDiagnostics);
+                                    const lastError = parseErrorAtCurrentToken(Diagnostics.A_JSDoc_typedef_comment_may_not_contain_multiple_type_tags);
                                     if (lastError) {
-                                        addRelatedInfo(
-                                            lastError,
-                                            createDetachedDiagnostic(fileName, 0, 0, Diagnostics.The_tag_was_first_specified_here)
-                                        );
+                                        addRelatedInfo(lastError, createDetachedDiagnostic(fileName, 0, 0, Diagnostics.The_tag_was_first_specified_here));
                                     }
                                     break;
                                 }
@@ -7994,7 +8023,7 @@ namespace ts {
                     }
 
                     const typedefTag = factory.createJSDocTypedefTag(tagName, typeExpression, fullName, comment);
-                    return finishNode(typedefTag, start);
+                    return finishNode(typedefTag, start, end);
                 }
 
                 function parseJSDocTypeNameWithNamespace(nested?: boolean) {

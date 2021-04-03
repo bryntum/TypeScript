@@ -490,7 +490,7 @@ namespace ts {
         return unescapeLeadingUnderscores(identifierOrPrivateName.escapedText);
     }
     export function symbolName(symbol: Symbol): string {
-        if (symbol.valueDeclaration && isPrivateIdentifierPropertyDeclaration(symbol.valueDeclaration)) {
+        if (symbol.valueDeclaration && isPrivateIdentifierClassElementDeclaration(symbol.valueDeclaration)) {
             return idText(symbol.valueDeclaration.name);
         }
         return unescapeLeadingUnderscores(symbol.escapedName);
@@ -777,6 +777,10 @@ namespace ts {
         return getFirstJSDocTag(node, isJSDocAbstractTag, /*noCache*/ true);
     }
 
+    export function getJSDocOverrideTagNoCache(node: Node): JSDocOverrideTag | undefined {
+        return getFirstJSDocTag(node, isJSDocOverrideTag, /*noCache*/ true);
+    }
+
     /** Gets the JSDoc deprecated tag for the node if present */
     export function getJSDocDeprecatedTag(node: Node): JSDocDeprecatedTag | undefined {
         return getFirstJSDocTag(node, isJSDocDeprecatedTag);
@@ -901,8 +905,10 @@ namespace ts {
     }
 
     /** Gets the text of a jsdoc comment, flattening links to their text. */
-    export function getTextOfJSDocComment(comment?: NodeArray<JSDocText | JSDocLink>) {
-        return comment?.map(c => c.kind === SyntaxKind.JSDocText ? c.text : `{@link ${c.name ? entityNameToString(c.name) + " " : ""}${c.text}}`).join("");
+    export function getTextOfJSDocComment(comment?: string | NodeArray<JSDocText | JSDocLink>) {
+        return typeof comment === "string" ? comment
+            : comment?.map(c =>
+                c.kind === SyntaxKind.JSDocText ? c.text : `{@link ${c.name ? entityNameToString(c.name) + " " : ""}${c.text}}`).join("");
     }
 
     /**
@@ -1151,8 +1157,8 @@ namespace ts {
 
     // Private Identifiers
     /*@internal*/
-    export function isPrivateIdentifierPropertyDeclaration(node: Node): node is PrivateIdentifierPropertyDeclaration {
-        return isPropertyDeclaration(node) && isPrivateIdentifier(node.name);
+    export function isPrivateIdentifierClassElementDeclaration(node: Node): node is PrivateClassElementDeclaration {
+        return (isPropertyDeclaration(node) || isMethodOrAccessor(node)) && isPrivateIdentifier(node.name);
     }
 
     /*@internal*/
@@ -1176,6 +1182,7 @@ namespace ts {
             case SyntaxKind.ProtectedKeyword:
             case SyntaxKind.ReadonlyKeyword:
             case SyntaxKind.StaticKeyword:
+            case SyntaxKind.OverrideKeyword:
                 return true;
         }
         return false;
@@ -1188,7 +1195,7 @@ namespace ts {
 
     /* @internal */
     export function isClassMemberModifier(idToken: SyntaxKind): boolean {
-        return isParameterPropertyModifier(idToken) || idToken === SyntaxKind.StaticKeyword;
+        return isParameterPropertyModifier(idToken) || idToken === SyntaxKind.StaticKeyword || idToken === SyntaxKind.OverrideKeyword;
     }
 
     export function isModifier(node: Node): node is Modifier {

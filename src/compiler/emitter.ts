@@ -1166,8 +1166,8 @@ namespace ts {
             tempFlagsStack = [];
             tempFlags = TempFlags.Auto;
             reservedNamesStack = [];
-            currentSourceFile = undefined!;
-            currentLineMap = undefined!;
+            currentSourceFile = undefined;
+            currentLineMap = undefined;
             detachedCommentsInfo = undefined;
             setWriter(/*output*/ undefined, /*_sourceMapGenerator*/ undefined);
         }
@@ -3153,10 +3153,10 @@ namespace ts {
 
             let body = node.body;
             if (!body) return writeTrailingSemicolon();
-            while (body.kind === SyntaxKind.ModuleDeclaration) {
+            while (body && isModuleDeclaration(body)) {
                 writePunctuation(".");
-                emit((<ModuleDeclaration>body).name);
-                body = (<ModuleDeclaration>body).body!;
+                emit(body.name);
+                body = body.body;
             }
 
             writeSpace();
@@ -3707,7 +3707,7 @@ namespace ts {
             emit(tagName);
         }
 
-        function emitJSDocComment(comment: NodeArray<JSDocText | JSDocLink> | undefined) {
+        function emitJSDocComment(comment: string | NodeArray<JSDocText | JSDocLink> | undefined) {
             const text = getTextOfJSDocComment(comment);
             if (text) {
                 writeSpace();

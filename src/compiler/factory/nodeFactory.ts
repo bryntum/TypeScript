@@ -370,6 +370,8 @@ namespace ts {
             get updateJSDocProtectedTag() { return getJSDocSimpleTagUpdateFunction<JSDocProtectedTag>(SyntaxKind.JSDocProtectedTag); },
             get createJSDocReadonlyTag() { return getJSDocSimpleTagCreateFunction<JSDocReadonlyTag>(SyntaxKind.JSDocReadonlyTag); },
             get updateJSDocReadonlyTag() { return getJSDocSimpleTagUpdateFunction<JSDocReadonlyTag>(SyntaxKind.JSDocReadonlyTag); },
+            get createJSDocOverrideTag() { return getJSDocSimpleTagCreateFunction<JSDocOverrideTag>(SyntaxKind.JSDocOverrideTag); },
+            get updateJSDocOverrideTag() { return getJSDocSimpleTagUpdateFunction<JSDocOverrideTag>(SyntaxKind.JSDocOverrideTag); },
             get createJSDocDeprecatedTag() { return getJSDocSimpleTagCreateFunction<JSDocDeprecatedTag>(SyntaxKind.JSDocDeprecatedTag); },
             get updateJSDocDeprecatedTag() { return getJSDocSimpleTagUpdateFunction<JSDocDeprecatedTag>(SyntaxKind.JSDocDeprecatedTag); },
             createJSDocUnknownTag,
@@ -557,9 +559,9 @@ namespace ts {
             // NOTE: The following properties are commonly set by the binder and are added here to
             // ensure declarations have a stable shape.
             node.symbol = undefined!; // initialized by binder
-            node.localSymbol = undefined!; // initialized by binder
-            node.locals = undefined!; // initialized by binder
-            node.nextContainer = undefined!; // initialized by binder
+            node.localSymbol = undefined; // initialized by binder
+            node.locals = undefined; // initialized by binder
+            node.nextContainer = undefined; // initialized by binder
             return node;
         }
 
@@ -1043,6 +1045,7 @@ namespace ts {
             if (flags & ModifierFlags.Static) { result.push(createModifier(SyntaxKind.StaticKeyword)); }
             if (flags & ModifierFlags.Readonly) { result.push(createModifier(SyntaxKind.ReadonlyKeyword)); }
             if (flags & ModifierFlags.Async) { result.push(createModifier(SyntaxKind.AsyncKeyword)); }
+            if (flags & ModifierFlags.Override) { result.push(createModifier(SyntaxKind.OverrideKeyword)); }
             return result;
         }
 
@@ -4245,7 +4248,7 @@ namespace ts {
         function createBaseJSDocTag<T extends JSDocTag>(kind: T["kind"], tagName: Identifier, comment: string | NodeArray<JSDocText | JSDocLink> | undefined) {
             const node = createBaseNode<T>(kind);
             node.tagName = tagName;
-            node.comment = typeof comment === "string" ? createNodeArray([createJSDocText(comment)]) : comment;
+            node.comment = comment;
             return node;
         }
 
@@ -4509,7 +4512,7 @@ namespace ts {
         // @api
         function createJSDocComment(comment?: string | NodeArray<JSDocText | JSDocLink> | undefined, tags?: readonly JSDocTag[] | undefined) {
             const node = createBaseNode<JSDoc>(SyntaxKind.JSDocComment);
-            node.comment = typeof comment === "string" ? createNodeArray([createJSDocText(comment)]) : comment;
+            node.comment = comment;
             node.tags = asNodeArray(tags);
             return node;
         }
@@ -5937,6 +5940,7 @@ namespace ts {
             case SyntaxKind.JSDocPrivateTag: return "private";
             case SyntaxKind.JSDocProtectedTag: return "protected";
             case SyntaxKind.JSDocReadonlyTag: return "readonly";
+            case SyntaxKind.JSDocOverrideTag: return "override";
             case SyntaxKind.JSDocTemplateTag: return "template";
             case SyntaxKind.JSDocTypedefTag: return "typedef";
             case SyntaxKind.JSDocParameterTag: return "param";
