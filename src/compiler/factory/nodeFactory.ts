@@ -345,6 +345,8 @@ namespace ts {
             updateJSDocSeeTag,
             createJSDocNameReference,
             updateJSDocNameReference,
+            createJSDocMemberName,
+            updateJSDocMemberName,
             createJSDocLink,
             updateJSDocLink,
             // lazily load factory members for JSDoc tags with similar structure
@@ -533,7 +535,7 @@ namespace ts {
             // repeatedly calling push(), the list may not have the optimal memory layout. We invoke slice() for
             // small arrays (1 to 4 elements) to give the VM a chance to allocate an optimal representation.
             const length = elements.length;
-            const array = <MutableNodeArray<T>>(length >= 1 && length <= 4 ? elements.slice() : elements);
+            const array = (length >= 1 && length <= 4 ? elements.slice() : elements) as MutableNodeArray<T>;
             setTextRangePosEnd(array, -1, -1);
             array.hasTrailingComma = !!hasTrailingComma;
             aggregateChildrenFlags(array);
@@ -970,6 +972,7 @@ namespace ts {
                 case SyntaxKind.BigIntKeyword:
                 case SyntaxKind.NeverKeyword:
                 case SyntaxKind.ObjectKeyword:
+                case SyntaxKind.OverrideKeyword:
                 case SyntaxKind.StringKeyword:
                 case SyntaxKind.BooleanKeyword:
                 case SyntaxKind.SymbolKeyword:
@@ -1043,9 +1046,9 @@ namespace ts {
             if (flags & ModifierFlags.Protected) { result.push(createModifier(SyntaxKind.ProtectedKeyword)); }
             if (flags & ModifierFlags.Abstract) { result.push(createModifier(SyntaxKind.AbstractKeyword)); }
             if (flags & ModifierFlags.Static) { result.push(createModifier(SyntaxKind.StaticKeyword)); }
+            if (flags & ModifierFlags.Override) { result.push(createModifier(SyntaxKind.OverrideKeyword)); }
             if (flags & ModifierFlags.Readonly) { result.push(createModifier(SyntaxKind.ReadonlyKeyword)); }
             if (flags & ModifierFlags.Async) { result.push(createModifier(SyntaxKind.AsyncKeyword)); }
-            if (flags & ModifierFlags.Override) { result.push(createModifier(SyntaxKind.OverrideKeyword)); }
             return result;
         }
 
@@ -1897,13 +1900,13 @@ namespace ts {
 
         function updateUnionOrIntersectionTypeNode<T extends UnionOrIntersectionTypeNode>(node: T, types: NodeArray<TypeNode>): T {
             return node.types !== types
-                ? update(<T>createUnionOrIntersectionTypeNode(node.kind, types), node)
+                ? update(createUnionOrIntersectionTypeNode(node.kind, types) as T, node)
                 : node;
         }
 
         // @api
         function createUnionTypeNode(types: readonly TypeNode[]): UnionTypeNode {
-            return <UnionTypeNode>createUnionOrIntersectionTypeNode(SyntaxKind.UnionType, types);
+            return createUnionOrIntersectionTypeNode(SyntaxKind.UnionType, types) as UnionTypeNode;
         }
 
         // @api
@@ -1913,7 +1916,7 @@ namespace ts {
 
         // @api
         function createIntersectionTypeNode(types: readonly TypeNode[]): IntersectionTypeNode {
-            return <IntersectionTypeNode>createUnionOrIntersectionTypeNode(SyntaxKind.IntersectionType, types);
+            return createUnionOrIntersectionTypeNode(SyntaxKind.IntersectionType, types) as IntersectionTypeNode;
         }
 
         // @api
@@ -2140,7 +2143,7 @@ namespace ts {
                 /*decorators*/ undefined,
                 /*modifiers*/ undefined,
                 name,
-                initializer
+                initializer && parenthesizerRules().parenthesizeExpressionForDisallowedComma(initializer)
             );
             node.propertyName = asName(propertyName);
             node.dotDotDotToken = dotDotDotToken;
@@ -2850,22 +2853,22 @@ namespace ts {
 
         // @api
         function createTemplateHead(text: string | undefined, rawText?: string, templateFlags?: TokenFlags) {
-            return <TemplateHead>createTemplateLiteralLikeNodeChecked(SyntaxKind.TemplateHead, text, rawText, templateFlags);
+            return createTemplateLiteralLikeNodeChecked(SyntaxKind.TemplateHead, text, rawText, templateFlags) as TemplateHead;
         }
 
         // @api
         function createTemplateMiddle(text: string | undefined, rawText?: string, templateFlags?: TokenFlags) {
-            return <TemplateMiddle>createTemplateLiteralLikeNodeChecked(SyntaxKind.TemplateMiddle, text, rawText, templateFlags);
+            return createTemplateLiteralLikeNodeChecked(SyntaxKind.TemplateMiddle, text, rawText, templateFlags) as TemplateMiddle;
         }
 
         // @api
         function createTemplateTail(text: string | undefined, rawText?: string, templateFlags?: TokenFlags) {
-            return <TemplateTail>createTemplateLiteralLikeNodeChecked(SyntaxKind.TemplateTail, text, rawText, templateFlags);
+            return createTemplateLiteralLikeNodeChecked(SyntaxKind.TemplateTail, text, rawText, templateFlags) as TemplateTail;
         }
 
         // @api
         function createNoSubstitutionTemplateLiteral(text: string | undefined, rawText?: string, templateFlags?: TokenFlags) {
-            return <NoSubstitutionTemplateLiteral>createTemplateLiteralLikeNodeChecked(SyntaxKind.NoSubstitutionTemplateLiteral, text, rawText, templateFlags);
+            return createTemplateLiteralLikeNodeChecked(SyntaxKind.NoSubstitutionTemplateLiteral, text, rawText, templateFlags) as NoSubstitutionTemplateLiteral;
         }
 
         // @api
@@ -4392,21 +4395,40 @@ namespace ts {
         }
 
         // @api
-        function createJSDocNameReference(name: EntityName): JSDocNameReference {
+        function createJSDocNameReference(name: EntityName | JSDocMemberName): JSDocNameReference {
             const node = createBaseNode<JSDocNameReference>(SyntaxKind.JSDocNameReference);
             node.name = name;
             return node;
         }
 
         // @api
-        function updateJSDocNameReference(node: JSDocNameReference, name: EntityName): JSDocNameReference {
+        function updateJSDocNameReference(node: JSDocNameReference, name: EntityName | JSDocMemberName): JSDocNameReference {
             return node.name !== name
                 ? update(createJSDocNameReference(name), node)
                 : node;
         }
 
         // @api
-        function createJSDocLink(name: EntityName | undefined, text: string): JSDocLink {
+        function createJSDocMemberName(left: EntityName | JSDocMemberName, right: Identifier) {
+            const node = createBaseNode<JSDocMemberName>(SyntaxKind.JSDocMemberName);
+            node.left = left;
+            node.right = right;
+            node.transformFlags |=
+                propagateChildFlags(node.left) |
+                propagateChildFlags(node.right);
+            return node;
+        }
+
+        // @api
+        function updateJSDocMemberName(node: JSDocMemberName, left: EntityName | JSDocMemberName, right: Identifier) {
+            return node.left !== left
+                || node.right !== right
+                ? update(createJSDocMemberName(left, right), node)
+                : node;
+        }
+
+        // @api
+        function createJSDocLink(name: EntityName | JSDocMemberName | undefined, text: string): JSDocLink {
             const node = createBaseNode<JSDocLink>(SyntaxKind.JSDocLink);
             node.name = name;
             node.text = text;
@@ -4414,7 +4436,7 @@ namespace ts {
         }
 
         // @api
-        function updateJSDocLink(node: JSDocLink, name: EntityName | undefined, text: string): JSDocLink {
+        function updateJSDocLink(node: JSDocLink, name: EntityName | JSDocMemberName | undefined, text: string): JSDocLink {
             return node.name !== name
                 ? update(createJSDocLink(name, text), node)
                 : node;
@@ -5458,13 +5480,13 @@ namespace ts {
                 case SyntaxKind.StringLiteral:
                     return false;
                 case SyntaxKind.ArrayLiteralExpression:
-                    const elements = (<ArrayLiteralExpression>target).elements;
+                    const elements = (target as ArrayLiteralExpression).elements;
                     if (elements.length === 0) {
                         return false;
                     }
                     return true;
                 case SyntaxKind.ObjectLiteralExpression:
-                    return (<ObjectLiteralExpression>target).properties.length > 0;
+                    return (target as ObjectLiteralExpression).properties.length > 0;
                 default:
                     return true;
             }
@@ -5482,7 +5504,7 @@ namespace ts {
                 thisArg = createThis();
                 target = languageVersion !== undefined && languageVersion < ScriptTarget.ES2015
                     ? setTextRange(createIdentifier("_super"), callee)
-                    : <PrimaryExpression>callee;
+                    : callee as PrimaryExpression;
             }
             else if (getEmitFlags(callee) & EmitFlags.HelperName) {
                 thisArg = createVoidZero();
@@ -5747,7 +5769,7 @@ namespace ts {
          */
         function liftToBlock(nodes: readonly Node[]): Statement {
             Debug.assert(every(nodes, isStatementOrBlock), "Cannot lift nodes to a Block.");
-            return <Statement>singleOrUndefined(nodes) || createBlock(<readonly Statement[]>nodes);
+            return singleOrUndefined(nodes) as Statement || createBlock(nodes as readonly Statement[]);
         }
 
         function findSpanEnd<T>(array: readonly T[], test: (value: T) => boolean, start: number) {
