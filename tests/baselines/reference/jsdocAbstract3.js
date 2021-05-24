@@ -24,6 +24,8 @@ class Foo {
     /** @abstract */
     static m2() { }
     /** @abstract */
+    p1;
+    /** @abstract */
     get p2() { }
     /** @abstract */
     set p2(value) { }
